@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1230a847b3442f141817bfb1e395ea7a, type: 3}
+  m_Name: Hematite
+  m_EditorClassIdentifier: Assembly-CSharp::MarsSampling.RockTypeDef
+  displayName: Specular Hematite Nodule
+  fieldDescription: A metallic, glittering nodule. Very shiny. Suspiciously shiny.
+    It practically asked to be picked up.
+  silicaPct: 11.8
+  ironPct: 68.4
+  magnesiumPct: 1.2
+  grainNote: coarse specular crystal faces
+  isRepresentative: 0
+  correctText: 
+  incorrectText: 'High-grade iron outlier - striking, and it represents almost nothing
+    around it. Survey protocol wants the average rock, not the trophy. No penalty:
+    noted, and the lab will still enjoy it.'
+  material: {fileID: 2100000, guid: f9587a2f0aa5fc64888a8d396f6873d8, type: 2}
+  shiny: 1

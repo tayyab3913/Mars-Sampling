@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc59c66082806145ba8b7e8ab53aa37, type: 3}
+  m_Name: Outro
+  m_EditorClassIdentifier: Assembly-CSharp::MarsSampling.DialogueSequence
+  lines:
+  - speaker: Good Luck (radio)
+    text: '''Shipment inbound - eleven units, sites logged and spaced.'' Sent.'
+  - speaker: Good Luck (radio)
+    text: First field job, zero samples lost, one downlink error survived. Big Boss
+      will take full credit, of course.
+  - speaker: Good Luck (radio)
+    text: Welcome to field geology. The pay is bad, but at least the commute is forty
+      million kilometres.
+  hasChoice: 0
+  choiceAText: 
+  choiceBText: 
+  branchA: []
+  branchB: []

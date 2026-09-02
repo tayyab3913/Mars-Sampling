@@ -26,6 +26,8 @@ namespace MarsSampling
         public void Open()
         {
             if (_open) return;
+            // Don't open over a dialogue/scanner - one modal at a time.
+            if (MissionManager.Instance.ModalOpen) return;
             _open = true;
             Refresh();
             root.SetActive(true);

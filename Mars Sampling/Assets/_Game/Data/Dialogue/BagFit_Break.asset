@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc59c66082806145ba8b7e8ab53aa37, type: 3}
+  m_Name: BagFit_Break
+  m_EditorClassIdentifier: Assembly-CSharp::MarsSampling.DialogueSequence
+  lines:
+  - speaker: Good Luck (radio)
+    text: Hammer time. A geologist's hammer is a precision instrument, whatever it
+      looks like.
+  - speaker: Good Luck (radio)
+    text: There - hand-sized pieces. We lose a little context, the assay's still
+      fine. Bag the freshest face, not the weathered crust.
+  hasChoice: 0
+  choiceAText: 
+  choiceBText: 
+  branchA: []
+  branchB: []

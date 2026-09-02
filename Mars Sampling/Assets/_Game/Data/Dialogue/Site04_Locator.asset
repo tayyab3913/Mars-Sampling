@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc59c66082806145ba8b7e8ab53aa37, type: 3}
+  m_Name: Site04_Locator
+  m_EditorClassIdentifier: Assembly-CSharp::MarsSampling.DialogueSequence
+  lines:
+  - speaker: Good Luck (radio)
+    text: Site 4 fix coming through... MS-grid 128.60E / 22.40N. Locked.
+  - speaker: Good Luck (radio)
+    text: Distance from Site 3 reads... five thousand kilometres. Huh. Logging it.
+  hasChoice: 1
+  choiceAText: That can't be right. We walked about ninety metres.
+  choiceBText: 'Copy. Log it: 5,000 km.'
+  branchA:
+  - speaker: Good Luck (radio)
+    text: ...Checking. Yes. Decimal drift on the downlink - it happens when Big Boss
+      doesn't renew the calibration contract.
+  - speaker: Good Luck (radio)
+    text: 'Actual spacing: 93 metres. Above the 50 minimum. Nice catch - that number
+      was headed straight for the university records.'
+  branchB:
+  - speaker: Good Luck (radio)
+    text: Logging five thousand kilo- hold on. That would put Site 4 on the far side
+      of Olympus Mons.
+  - speaker: Good Luck (radio)
+    text: 'Decimal drift on the downlink. Actual spacing: 93 metres, above the 50
+      minimum. Corrected. Good thing one of us is paying attention.'

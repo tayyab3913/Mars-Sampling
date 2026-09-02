@@ -43,7 +43,8 @@ namespace MarsSampling.EditorTools
 
         /// <summary>Create and save a URP Lit material.</summary>
         public static Material Lit(string assetPath, Color color, Texture2D baseMap,
-                                   float metallic, float smoothness, bool instancing)
+                                   float metallic, float smoothness, bool instancing,
+                                   Color? emission = null)
         {
             var m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             m.SetColor("_BaseColor", color);
@@ -51,8 +52,40 @@ namespace MarsSampling.EditorTools
             m.SetFloat("_Metallic", metallic);
             m.SetFloat("_Smoothness", smoothness);
             m.enableInstancing = instancing;
+            if (emission.HasValue)
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", emission.Value);
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            }
             AssetDatabase.CreateAsset(m, assetPath);
             return m;
+        }
+
+        /// <summary>Vertical gradient sky texture for the Panoramic skybox shader.</summary>
+        public static Texture2D GradientSky(string assetPath, Color ground, Color horizon, Color zenith)
+        {
+            const int w = 8, hgt = 512;
+            var tex = new Texture2D(w, hgt, TextureFormat.RGB24, false);
+            for (int y = 0; y < hgt; y++)
+            {
+                float v = y / (float)(hgt - 1); // 0 = down, 0.5 = horizon, 1 = up
+                Color c;
+                if (v < 0.5f)
+                    c = Color.Lerp(ground, horizon, Mathf.Pow(v / 0.5f, 3f));
+                else
+                    c = Color.Lerp(horizon, zenith, Mathf.Pow((v - 0.5f) / 0.5f, 0.55f));
+                for (int x = 0; x < w; x++) tex.SetPixel(x, y, c);
+            }
+            tex.Apply();
+            File.WriteAllBytes(assetPath, tex.EncodeToPNG());
+            UnityEngine.Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(assetPath);
+            var imp = (TextureImporter)AssetImporter.GetAtPath(assetPath);
+            imp.wrapMode = TextureWrapMode.Clamp;
+            imp.mipmapEnabled = false;
+            imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
         }
 
         // --------------------------------------------------------------- meshes

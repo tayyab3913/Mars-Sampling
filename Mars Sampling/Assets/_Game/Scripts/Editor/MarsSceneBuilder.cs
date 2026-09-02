@@ -716,12 +716,12 @@ namespace MarsSampling.EditorTools
             // ---- Tablet panel ----
             var tabletPanel = BuilderLib.Panel(ct, "TabletPanel", panelBg,
                 new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-12f, 0f), new Vector2(680f, 950f));
-            BuilderLib.MakeText(tabletPanel.transform, "Title", "FIELD TABLET - SAMPLING CHECKLIST", 30, accent, TextAnchor.UpperCenter,
-                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(0f, 50f), bold: true);
+            BuilderLib.MakeText(tabletPanel.transform, "Title", "FIELD TABLET - SAMPLING CHECKLIST", 28, accent, TextAnchor.UpperCenter,
+                new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(-180f, 50f), bold: true);
             var tabletBody = BuilderLib.MakeText(tabletPanel.transform, "Body", "", 24, new Color(0.85f, 0.9f, 0.92f), TextAnchor.UpperLeft,
                 new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -35f), new Vector2(-60f, -220f));
             var tabletClose = BuilderLib.MakeButton(tabletPanel.transform, "CloseButton", "X", 30, btnDark, Color.white,
-                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -12f), new Vector2(70f, 70f), out _);
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-12f, -12f), new Vector2(70f, 70f), out _);
             var sendBtn = BuilderLib.MakeButton(tabletPanel.transform, "SendButton", "SEND SHIPMENT CONFIRMATION", 26,
                 new Color(0.2f, 0.55f, 0.25f, 0.95f), Color.white,
                 new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 25f), new Vector2(560f, 90f), out _);

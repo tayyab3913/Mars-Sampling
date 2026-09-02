@@ -372,6 +372,7 @@ namespace MarsSampling
             sb.AppendLine();
             sb.AppendLine("Field exercise complete. Big Boss was, as ever, unavailable for comment.");
 
+            hud.SetObjective(""); // clear the HUD behind the end screen
             hud.ShowEndScreen("SHIPMENT CONFIRMED - INBOUND", sb.ToString());
         }
     }

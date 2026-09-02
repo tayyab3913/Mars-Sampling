@@ -101,10 +101,11 @@ namespace MarsSampling
 
                 if (phase == ISTouchPhase.Began)
                 {
-                    // Track every touch as a potential interact tap.
+                    if (UiUtil.IsPointerOverUi(pos)) continue; // UI owns this touch entirely
+
+                    // Track the touch as a potential interact tap.
                     _taps.Add(new TapTrack { id = id, start = pos, time = Time.unscaledTime });
 
-                    if (UiUtil.IsPointerOverUi(pos)) continue; // UI owns this touch
                     if (InputLocked) continue;
 
                     if (pos.x < Screen.width * 0.45f && _moveTouchId == -1)

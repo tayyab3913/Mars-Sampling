@@ -1,0 +1,6 @@
+<!-- Keep gameplay code out of the IL2CPP managed stripper's reach:
+     UI buttons call MarsSampling methods via serialized UnityEvents (reflection),
+     which the linker cannot see. -->
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all" />
+</linker>

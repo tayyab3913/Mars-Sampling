@@ -1,0 +1,6 @@
+Here’s what I’d like delivered in the first milestone:
+* A playable grey-box level (Unreal or Unity, your choice) in first-person, featuring a kilometre-wide terrain chunk, basic movement, and a working sampling tool.
+* Three rock types with placeholder textures and a simple “lab scanner” UI that marks each specimen as correct or incorrect based on hidden properties.
+* Clean, commented project files so mechanics can be expanded later.
+
+Everything is just concept it’s part of your work to be creative and come up with the designs yourself. This is the only asset that I have for you

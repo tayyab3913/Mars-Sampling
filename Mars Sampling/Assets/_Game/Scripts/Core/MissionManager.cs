@@ -240,6 +240,27 @@ namespace MarsSampling
             scanner.Open(rock, $"MS-{NumberedSampleCount + 1:00}");
         }
 
+        /// <summary>
+        /// Hooked to the docked XRF scanner tool button (bottom-right HUD).
+        /// The tool itself can't grab rocks - it explains what it needs next.
+        /// </summary>
+        public void OnScannerToolTapped()
+        {
+            if (Phase != MissionPhase.Sampling)
+            {
+                hud.ShowHint("XRF scanner idle - nothing to assay right now.");
+                return;
+            }
+            if (_awaitingDuplicate)
+            {
+                hud.ShowHint("Scanner ready. Tap a second rock at Site 10 to bag the duplicate.");
+                return;
+            }
+            hud.ShowHint(sites[NextSiteIndex - 1].Logged
+                ? $"Scanner ready. Tap a rock near the Site {NextSiteIndex} flag to hold it under the scanner."
+                : $"Scanner ready. Log Site {NextSiteIndex} with Good Luck first, then tap a rock to assay it.");
+        }
+
         /// <summary>Scanner tells us a rock was assayed (novelty-bias tracking).</summary>
         public void NotifyScanned(RockSample rock)
         {

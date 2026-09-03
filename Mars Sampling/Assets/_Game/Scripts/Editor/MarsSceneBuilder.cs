@@ -664,6 +664,7 @@ namespace MarsSampling.EditorTools
             public DialogueUI dialogueUi;
             public RectTransform joyBase, joyKnob;
             public Button tabletButton;
+            public Button scannerToolButton;
         }
 
         static UiRefs BuildUi()
@@ -733,9 +734,13 @@ namespace MarsSampling.EditorTools
             refs.tablet.bodyText = tabletBody;
             refs.tablet.sendButton = sendBtn;
 
-            // ---- Scanner panel ----
+            // ---- Scanner tool + panel (the lab scanner lives bottom-right) ----
+            refs.scannerToolButton = BuilderLib.MakeButton(ct, "ScannerToolButton", "XRF SCANNER", 26, btnCol, Color.white,
+                new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-25f, 25f), new Vector2(280f, 92f), out _);
+
+            // The scan panel opens in the same corner, like the handheld device's screen.
             var scanPanel = BuilderLib.Panel(ct, "ScannerPanel", panelBg,
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 40f), new Vector2(1000f, 640f));
+                new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-18f, 18f), new Vector2(950f, 620f));
             var scanTitle = BuilderLib.MakeText(scanPanel.transform, "Title", "FIELD SPECIMEN", 34, accent, TextAnchor.UpperCenter,
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(0f, 55f), bold: true);
             var scanBody = BuilderLib.MakeText(scanPanel.transform, "Body", "", 26, new Color(0.85f, 0.9f, 0.92f), TextAnchor.UpperLeft,
@@ -751,6 +756,7 @@ namespace MarsSampling.EditorTools
 
             refs.scanner = canvasGo.AddComponent<ScannerUI>();
             refs.scanner.root = scanPanel.gameObject;
+            refs.scanner.toolButton = refs.scannerToolButton.gameObject;
             refs.scanner.titleText = scanTitle;
             refs.scanner.bodyText = scanBody;
             refs.scanner.scanButton = scanBtn;
@@ -779,7 +785,7 @@ namespace MarsSampling.EditorTools
 
             // ---- Dialogue panel ----
             var dlgPanel = BuilderLib.Panel(ct, "DialoguePanel", new Color(0f, 0f, 0f, 0.82f),
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 18f), new Vector2(1450f, 310f));
+                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-90f, 18f), new Vector2(1300f, 310f));
             var speaker = BuilderLib.MakeText(dlgPanel.transform, "Speaker", "", 28, accent, TextAnchor.UpperLeft,
                 new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(35f, -18f), new Vector2(-70f, 40f), bold: true);
             var dlgBody = BuilderLib.MakeText(dlgPanel.transform, "Body", "", 30, Color.white, TextAnchor.UpperLeft,
@@ -871,6 +877,7 @@ namespace MarsSampling.EditorTools
             UnityEventTools.AddBoolPersistentListener(ui.dialogueUi.choiceAButton.onClick, runner.OnChoiceClicked, true);
             UnityEventTools.AddBoolPersistentListener(ui.dialogueUi.choiceBButton.onClick, runner.OnChoiceClicked, false);
             UnityEventTools.AddPersistentListener(ui.tablet.sendButton.onClick, new UnityAction(m.OnSendConfirmation));
+            UnityEventTools.AddPersistentListener(ui.scannerToolButton.onClick, new UnityAction(m.OnScannerToolTapped));
         }
     }
 }

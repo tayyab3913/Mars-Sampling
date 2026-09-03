@@ -19,6 +19,8 @@ namespace MarsSampling
     {
         [Header("Wired by the scene builder")]
         public GameObject root;
+        [Tooltip("The docked XRF tool button (bottom-right); hidden while the scan panel is open in its place.")]
+        public GameObject toolButton;
         public Text titleText;
         public Text bodyText;
         public Button scanButton;
@@ -48,6 +50,7 @@ namespace MarsSampling
 
             scanButton.gameObject.SetActive(true);
             bagButton.gameObject.SetActive(false); // must scan first
+            if (toolButton != null) toolButton.SetActive(false); // panel takes the tool's corner
             root.SetActive(true);
             MissionManager.Instance.PushModal();
         }
@@ -69,6 +72,7 @@ namespace MarsSampling
 
             scanButton.gameObject.SetActive(false);
             bagButton.gameObject.SetActive(true);
+            if (toolButton != null) toolButton.SetActive(false);
             root.SetActive(true);
             MissionManager.Instance.PushModal();
         }
@@ -121,6 +125,7 @@ namespace MarsSampling
         {
             _rock = null;
             root.SetActive(false);
+            if (toolButton != null) toolButton.SetActive(true);
             MissionManager.Instance.PopModal();
         }
     }

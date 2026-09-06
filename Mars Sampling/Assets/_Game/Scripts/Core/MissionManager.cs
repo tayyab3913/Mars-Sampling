@@ -222,6 +222,14 @@ namespace MarsSampling
                 return;
             }
 
+            // Wild rocks (siteIndex 0) litter the whole surface, but sampling is
+            // only valid at a flagged, satellite-logged site.
+            if (rock.siteIndex == 0)
+            {
+                hud.ShowHint($"No satellite fix here - samples must come from a flagged site. Site {NextSiteIndex} is next.");
+                return;
+            }
+
             if (rock.siteIndex != NextSiteIndex)
             {
                 // Spacing rule surfaced to the player: rocks at old/other sites are refused.

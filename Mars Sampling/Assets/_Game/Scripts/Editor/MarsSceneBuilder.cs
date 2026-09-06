@@ -51,6 +51,31 @@ namespace MarsSampling.EditorTools
         static Material _terrainMat, _basaltMat, _sandMat, _hematiteMat, _mountainMat,
                         _poleMat, _roverMat, _darkMat, _tarpMat, _bagMat, _crateMat, _suitMat;
 
+        // Layer for the mass gravel scatter, culled by camera distance (mobile budget).
+        static int _debrisLayer;
+
+        /// <summary>Find or register a named layer in the first free user slot (8+).</summary>
+        static int EnsureLayer(string name)
+        {
+            int existing = LayerMask.NameToLayer(name);
+            if (existing != -1) return existing;
+
+            var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            var layers = tagManager.FindProperty("layers");
+            for (int i = 8; i < layers.arraySize; i++)
+            {
+                var slot = layers.GetArrayElementAtIndex(i);
+                if (string.IsNullOrEmpty(slot.stringValue))
+                {
+                    slot.stringValue = name;
+                    tagManager.ApplyModifiedProperties();
+                    return i;
+                }
+            }
+            Debug.LogWarning("No free layer slot; gravel will use Default (no distance cull).");
+            return 0;
+        }
+
         [MenuItem("Mars Sampling/Build Level (full rebuild)")]
         public static void Build()
         {
@@ -66,11 +91,13 @@ namespace MarsSampling.EditorTools
             var rockTypes = BuildRockTypeAssets();
             var config = BuildConfigAsset();
             var rockMeshes = BuildRockMeshes();
+            var pebbleMeshes = BuildPebbleMeshes();
+            _debrisLayer = EnsureLayer("WildDebris");
 
             var player = BuildPlayer(out Camera cam);
             BuildCamp(out StationProp bagBox, out StationProp tarp, out StationProp rover, out Transform campCenter);
             var sites = BuildSites(rockTypes, rockMeshes);
-            BuildDecorativeRocks(rockTypes, rockMeshes);
+            BuildDecorativeRocks(rockTypes, rockMeshes, pebbleMeshes);
 
             var ui = BuildUi();
             WireMission(config, player, cam, campCenter, tarp.transform, sites, ui);
@@ -269,6 +296,13 @@ namespace MarsSampling.EditorTools
             cam.farClipPlane = 900f;
             camGo.AddComponent<AudioListener>();
 
+            // The gravel layer stops drawing past 170 m - individual pebbles are
+            // sub-pixel long before that, and it caps the scatter's GPU cost.
+            // (Applied at runtime: Camera.layerCullDistances isn't serialized.)
+            var cull = camGo.AddComponent<LayerCullDistance>();
+            cull.layerName = "WildDebris";
+            cull.distance = 170f;
+
             var pc = player.AddComponent<PlayerController>();
             pc.cameraPivot = pivot.transform;
             var interactor = player.AddComponent<PlayerInteractor>();
@@ -439,30 +473,84 @@ namespace MarsSampling.EditorTools
             }
         }
 
-        static void BuildDecorativeRocks(RockTypeDef[] types, Mesh[] meshes)
+        /// <summary>
+        /// Strews the whole surface with wild rocks (client note: the planet should
+        /// not read as a flat desert with rocks only at the flags). Three tiers:
+        ///  - ~5000 clumped 20-tri pebbles on a layer the camera culls past 170 m
+        ///    (batched, no colliders, no GI - very cheap);
+        ///  - ~700 hand-sized rocks, solid and tappable;
+        ///  - ~50 boulders to steer around.
+        /// Tappable wild rocks carry a RockSample with siteIndex 0, so tapping one
+        /// explains that sampling only happens at flagged, logged sites.
+        /// </summary>
+        static void BuildDecorativeRocks(RockTypeDef[] types, Mesh[] meshes, Mesh[] pebbles)
         {
-            var root = new GameObject("DecorativeRocks").transform;
+            var root = new GameObject("WildRocks").transform;
             var rnd = new System.Random(9001);
-            int placed = 0;
-            while (placed < 340)
+
+            System.Func<float, float, bool> blocked = (float x, float z) =>
             {
-                float x = (float)(rnd.NextDouble() * 470.0 - 235.0);
-                float z = (float)(rnd.NextDouble() * 470.0 - 235.0);
-
-                bool tooClose = Vector2.Distance(new Vector2(x, z), Camp) < 18f;
+                if (Vector2.Distance(new Vector2(x, z), Camp) < 16f) return true;
                 foreach (var sp in SitePos)
-                    if (Vector2.Distance(new Vector2(x, z), sp) < 12f) { tooClose = true; break; }
-                if (tooClose) continue;
+                    if (Vector2.Distance(new Vector2(x, z), sp) < 8f) return true;
+                return false;
+            };
+            System.Func<Vector2> pick = () => new Vector2(
+                (float)(rnd.NextDouble() * 470.0 - 235.0),
+                (float)(rnd.NextDouble() * 470.0 - 235.0));
 
-                float scale = 0.3f + (float)rnd.NextDouble() * 0.45f;
-                var go = new GameObject("DecoRock", typeof(MeshFilter), typeof(MeshRenderer));
+            // Tier 1: pebble fields, clumped with noise so the ground reads patchy
+            // and natural instead of uniformly salted.
+            int placed = 0;
+            while (placed < 5000)
+            {
+                Vector2 p = pick();
+                if (blocked(p.x, p.y)) continue;
+                float clump = Mathf.PerlinNoise(p.x * 0.02f + 5.1f, p.y * 0.02f + 8.7f);
+                if (rnd.NextDouble() > clump * clump * 1.6f) continue; // denser in patches
+
+                float scale = 0.12f + (float)rnd.NextDouble() * 0.35f;
+                var go = new GameObject("Pebble", typeof(MeshFilter), typeof(MeshRenderer));
                 go.transform.SetParent(root, false);
-                go.transform.position = new Vector3(x, H(x, z) + 0.24f * scale, z);
+                go.transform.position = new Vector3(p.x, H(p.x, p.y) + 0.2f * scale, p.y);
+                go.transform.localScale = Vector3.one * scale;
+                go.transform.rotation = Quaternion.Euler(0f, (float)rnd.NextDouble() * 360f, 0f);
+                go.GetComponent<MeshFilter>().sharedMesh = pebbles[rnd.Next(pebbles.Length)];
+                go.GetComponent<MeshRenderer>().sharedMaterial = rnd.NextDouble() < 0.6 ? types[0].material : types[1].material;
+                go.layer = _debrisLayer;
+                // Batched but kept out of the lightmap so bake time stays sane.
+                GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic);
+                placed++;
+            }
+
+            // Tiers 2+3: solid, tappable rocks and the occasional boulder.
+            placed = 0;
+            while (placed < 750)
+            {
+                Vector2 p = pick();
+                if (blocked(p.x, p.y)) continue;
+
+                bool boulder = placed < 50; // first 50 are boulders, rest hand-sized
+                float scale = boulder
+                    ? 1.4f + (float)rnd.NextDouble() * 1.4f
+                    : 0.45f + (float)rnd.NextDouble() * 0.45f;
+
+                var go = new GameObject(boulder ? "WildBoulder" : "WildRock",
+                                        typeof(MeshFilter), typeof(MeshRenderer));
+                go.transform.SetParent(root, false);
+                go.transform.position = new Vector3(p.x, H(p.x, p.y) + 0.24f * scale, p.y);
                 go.transform.localScale = Vector3.one * scale;
                 go.transform.rotation = Quaternion.Euler(0f, (float)rnd.NextDouble() * 360f, 0f);
                 go.GetComponent<MeshFilter>().sharedMesh = meshes[rnd.Next(meshes.Length)];
-                go.GetComponent<MeshRenderer>().sharedMaterial = rnd.NextDouble() < 0.6 ? types[0].material : types[1].material;
-                go.isStatic = true; // no collider: decorative only, static-batched
+                var type = rnd.NextDouble() < 0.6 ? types[0] : types[1];
+                go.GetComponent<MeshRenderer>().sharedMaterial = type.material;
+
+                go.AddComponent<SphereCollider>().radius = 0.55f;
+                var rs = go.AddComponent<RockSample>();
+                rs.rockType = type;
+                rs.siteIndex = 0; // wild rock: MissionManager refuses sampling with an explanation
+
+                go.isStatic = true;
                 placed++;
             }
         }
@@ -477,6 +565,18 @@ namespace MarsSampling.EditorTools
                 meshes[i] = BuilderLib.Rock("Rock" + i, i * 31 + 7);
                 Unwrapping.GenerateSecondaryUVSet(meshes[i]); // lightmap UVs
                 AssetDatabase.CreateAsset(meshes[i], $"{MeshDir}/Rock{i}.asset");
+            }
+            return meshes;
+        }
+
+        /// <summary>20-tri pebbles for the mass ground scatter (no lightmap UVs needed).</summary>
+        static Mesh[] BuildPebbleMeshes()
+        {
+            var meshes = new Mesh[3];
+            for (int i = 0; i < meshes.Length; i++)
+            {
+                meshes[i] = BuilderLib.Rock("Pebble" + i, i * 17 + 3, subdivisions: 0);
+                AssetDatabase.CreateAsset(meshes[i], $"{MeshDir}/Pebble{i}.asset");
             }
             return meshes;
         }

@@ -138,14 +138,16 @@ namespace MarsSampling.EditorTools
         }
 
         /// <summary>
-        /// Low-poly rock: icosphere (1 subdivision) with radial noise, a flattened
-        /// underside so it sits on the ground, and flat shading. Local radius ~0.5.
+        /// Low-poly rock: icosphere with radial noise, a flattened underside so it
+        /// sits on the ground, and flat shading. Local radius ~0.5.
+        /// subdivisions=1 gives an 80-tri rock; 0 gives a 20-tri pebble for mass
+        /// ground scatter.
         /// </summary>
-        public static Mesh Rock(string name, int seed)
+        public static Mesh Rock(string name, int seed, int subdivisions = 1)
         {
             List<Vector3> verts;
             List<int> tris;
-            Icosphere(1, out verts, out tris);
+            Icosphere(subdivisions, out verts, out tris);
 
             for (int i = 0; i < verts.Count; i++)
             {

@@ -77,7 +77,9 @@ flag, locator dialogue with computed distances, rocks — is placed and wired.
 ## Mobile budget notes
 
 Blockout art on purpose: one 29k-tri terrain mesh with a MeshCollider, flat-shaded rock meshes
-shared by all rocks (interactable ones have colliders, the ~340 decorative ones are static-batched
-with none), a jagged silhouette ring for mountains, linear fog + gradient skybox doing the
-"reads expansive" work. Lighting is a single mixed directional light with subtractive baked GI on
+shared by all rocks, a jagged silhouette ring for mountains, linear fog + gradient skybox doing the
+"reads expansive" work. The surface is strewn with ~5,000 clumped 20-tri pebbles (static-batched,
+no colliders, on a `WildDebris` layer the camera culls past 170 m) plus ~750 solid, tappable hand
+rocks and boulders; only the clusters at the flags are sampleable — tapping a wild rock explains
+the rule. Sample-cluster rocks and wild rocks share the same four 80-tri meshes. Lighting is a single mixed directional light with subtractive baked GI on
 one 1024 lightmap; no realtime shadows. UI is one uGUI canvas. Rock materials are GPU-instanced.

@@ -16,8 +16,16 @@ namespace MarsSampling
         public GameObject endRoot;
         public Text endTitle;
         public Text endBody;
+        [Tooltip("Optional: the TABLET button label, gets a [Tab] hint on desktop.")]
+        public Text tabletButtonLabel;
 
         Coroutine _hintRoutine;
+
+        void Start()
+        {
+            if (tabletButtonLabel != null && !Application.isMobilePlatform)
+                tabletButtonLabel.text = "TABLET  [Tab]";
+        }
 
         public void SetObjective(string text)
         {

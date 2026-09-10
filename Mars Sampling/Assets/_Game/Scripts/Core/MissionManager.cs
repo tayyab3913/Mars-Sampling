@@ -82,6 +82,10 @@ namespace MarsSampling
         bool _baggedShiny;
         bool _caughtLocatorError;
 
+        // "Tap" on phones, "Click" on desktop - keeps every hint honest per platform.
+        static string Verb => Application.isMobilePlatform ? "Tap" : "Click";
+        static string VerbLower => Application.isMobilePlatform ? "tap" : "click";
+
         int _modalCount;
         public bool ModalOpen => _modalCount > 0;
 
@@ -100,7 +104,11 @@ namespace MarsSampling
         {
             yield return new WaitForSeconds(0.8f);
             dialogue.Play(introDialogue, _ =>
-                hud.SetObjective("Tap the BAG BOX by the rover to confirm the numbered bags."));
+            {
+                hud.SetObjective(Verb + " the BAG BOX by the rover to confirm the numbered bags.");
+                if (!Application.isMobilePlatform)
+                    hud.ShowHint("WASD move  |  Mouse look  |  Click / E interact  |  Tab tablet  |  Esc free cursor", 10f);
+            });
         }
 
         /// <summary>Panels/dialogues call these so movement pauses while UI is up.</summary>
@@ -185,7 +193,7 @@ namespace MarsSampling
                 }
                 SiteLog.Add($"S{site.index:00}  {dist:0} m from {(site.index == 1 ? "camp" : $"S{site.index - 1:00}")}" +
                             $"  [OK] >= {config.minSpacingMeters:0} m{note}");
-                hud.SetObjective($"Site {site.index} logged. Tap a rock near the flag to sample it.");
+                hud.SetObjective($"Site {site.index} logged. {Verb} a rock near the flag to sample it.");
                 tablet.Refresh();
             });
         }
@@ -261,12 +269,12 @@ namespace MarsSampling
             }
             if (_awaitingDuplicate)
             {
-                hud.ShowHint("Scanner ready. Tap a second rock at Site 10 to bag the duplicate.");
+                hud.ShowHint($"Scanner ready. {Verb} a second rock at Site 10 to bag the duplicate.");
                 return;
             }
             hud.ShowHint(sites[NextSiteIndex - 1].Logged
-                ? $"Scanner ready. Tap a rock near the Site {NextSiteIndex} flag to hold it under the scanner."
-                : $"Scanner ready. Log Site {NextSiteIndex} with Good Luck first, then tap a rock to assay it.");
+                ? $"Scanner ready. {Verb} a rock near the Site {NextSiteIndex} flag to hold it under the scanner."
+                : $"Scanner ready. Log Site {NextSiteIndex} with Good Luck first, then {VerbLower} a rock to assay it.");
         }
 
         /// <summary>Scanner tells us a rock was assayed (novelty-bias tracking).</summary>
@@ -318,13 +326,13 @@ namespace MarsSampling
             if (!isDuplicate && number == config.siteCount)
             {
                 _awaitingDuplicate = true;
-                hud.SetObjective("Protocol: collect the DUPLICATE at Site 10 - tap a second rock here.");
+                hud.SetObjective($"Protocol: collect the DUPLICATE at Site 10 - {VerbLower} a second rock here.");
             }
             else if (isDuplicate)
             {
                 _awaitingDuplicate = false;
                 Phase = MissionPhase.LayoutCheck;
-                hud.SetObjective("All 11 collected. Return to the rover and tap the TARP to lay them out.");
+                hud.SetObjective($"All 11 collected. Return to the rover and {VerbLower} the TARP to lay them out.");
             }
             else
             {
@@ -355,7 +363,7 @@ namespace MarsSampling
             dialogue.Play(layoutDialogue, _ =>
             {
                 Phase = MissionPhase.PackAndLoad;
-                hud.SetObjective("Count verified: 11/11. Tap the ROVER to pack and load the crate.");
+                hud.SetObjective($"Count verified: 11/11. {Verb} the ROVER to pack and load the crate.");
                 tablet.Refresh();
             });
         }

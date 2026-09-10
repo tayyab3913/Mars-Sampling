@@ -777,7 +777,7 @@ namespace MarsSampling.EditorTools
             var scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.matchWidthOrHeight = 1f; // landscape: scale by height so wide screens just get more room
             var ct = canvasGo.transform;
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
@@ -812,7 +812,7 @@ namespace MarsSampling.EditorTools
             refs.joyKnob = joyKnob.rectTransform;
 
             refs.tabletButton = BuilderLib.MakeButton(ct, "TabletButton", "TABLET", 28, btnDark, Color.white,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-25f, -25f), new Vector2(210f, 92f), out _);
+                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-25f, -25f), new Vector2(210f, 92f), out var tabletLabel);
 
             // ---- Tablet panel ----
             var tabletPanel = BuilderLib.Panel(ct, "TabletPanel", panelBg,
@@ -923,6 +923,7 @@ namespace MarsSampling.EditorTools
             refs.hud.endRoot = endPanel.gameObject;
             refs.hud.endTitle = endTitle;
             refs.hud.endBody = endBody;
+            refs.hud.tabletButtonLabel = tabletLabel;
 
             // Panel button wiring that doesn't need the mission yet.
             UnityEventTools.AddPersistentListener(tabletClose.onClick, new UnityAction(refs.tablet.Close));

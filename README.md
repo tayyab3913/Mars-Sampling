@@ -14,10 +14,15 @@ reports a wrong distance (5,000 km) that the player can catch against the spacin
 
 ## Running it
 
-- **Editor:** open `Assets/_Game/Scenes/Mars.unity`, press Play. WASD to move, hold **Right Mouse**
-  to look, **Left-Click** (or **E**) to interact.
+- **Windows:** `Builds/Windows/MarsSampling.exe`. WASD / arrows move, mouse looks (cursor is
+  captured), **Left-Click** or **E** interacts with what the crosshair is on, **Tab** opens the
+  tablet, **Esc** frees the cursor (click the world to re-capture). The cursor is released
+  automatically while any panel or dialogue is open.
 - **Phone:** left side of the screen is a floating joystick, dragging anywhere else looks around,
-  a short tap on a rock/prop interacts. `MarsSampling.apk` installs on Android 7.0+ (ARM64).
+  a short tap on a rock/prop interacts. `Builds/MarsSampling.apk` installs on Android 7.0+ (ARM64).
+- **Editor:** open `Assets/_Game/Scenes/Mars.unity`, press Play - same scheme as Windows (holding
+  **Right Mouse** also looks while the cursor is free). The scheme is picked at runtime from
+  `Application.isMobilePlatform`, so one scene serves both builds.
 - **Rebuild the whole level from scratch:** menu **Mars Sampling → Build Level (full rebuild)**.
   The scene, materials, meshes, data assets and UI are all generated deterministically by
   `Assets/_Game/Scripts/Editor/MarsSceneBuilder.cs` — the scene is disposable, the builder is truth.

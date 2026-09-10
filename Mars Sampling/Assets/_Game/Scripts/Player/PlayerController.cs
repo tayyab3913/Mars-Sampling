@@ -6,25 +6,29 @@ using ISTouchPhase = UnityEngine.InputSystem.TouchPhase;
 namespace MarsSampling
 {
     /// <summary>
-    /// First-person controller for phones, with a keyboard/mouse fallback for
-    /// editor testing.
+    /// First-person controller with two input schemes, picked at runtime:
     ///
-    /// Touch scheme:
+    /// Touch (phones):
     ///  - A touch starting on the LEFT ~45% of the screen becomes a floating
     ///    joystick (visuals appear where the thumb lands).
     ///  - Any other touch drags to look around.
     ///  - A short tap (quick, barely moved, not on UI) is forwarded to
     ///    PlayerInteractor as an interact tap.
     ///
-    /// Editor scheme: WASD move, hold Right Mouse to look, Left Click to tap,
-    /// E to interact with whatever is at the screen centre.
+    /// Desktop (Windows build + editor):
+    ///  - WASD / arrows move, mouse looks while the cursor is locked.
+    ///  - Left Click or E interacts with whatever the crosshair is on.
+    ///  - Tab toggles the tablet, Esc frees the cursor (click the world to re-lock).
+    ///  - The cursor is released automatically while any panel/dialogue is open
+    ///    (InputLocked) and re-captured when it closes.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
         [Header("Tuning")]
         public float moveSpeed = 5f;
-        public float lookSensitivity = 0.16f;   // degrees per pixel dragged
+        public float lookSensitivity = 0.16f;   // degrees per pixel dragged (touch)
+        public float mouseSensitivity = 0.10f;  // degrees per pixel of mouse delta
         public float gravity = -25f;
         public float joystickRadiusPx = 140f;   // full-deflection thumb travel
         public float tapMaxSeconds = 0.30f;
@@ -42,6 +46,8 @@ namespace MarsSampling
         CharacterController _cc;
         float _pitch;
         float _yVel;
+        bool _desktop;      // keyboard/mouse scheme (anything that isn't a phone)
+        bool _cursorFreed;  // player pressed Esc; cursor stays free until they click the world
 
         int _moveTouchId = -1;
         int _lookTouchId = -1;
@@ -53,6 +59,7 @@ namespace MarsSampling
         void Awake()
         {
             _cc = GetComponent<CharacterController>();
+            _desktop = !Application.isMobilePlatform;
             SetJoystickVisible(false);
         }
 
@@ -62,7 +69,11 @@ namespace MarsSampling
             Vector2 lookDelta = Vector2.zero;
 
             ReadTouches(ref moveInput, ref lookDelta);
-            ReadEditorInput(ref moveInput, ref lookDelta);
+            if (_desktop)
+            {
+                ReadDesktopInput(ref moveInput, ref lookDelta);
+                UpdateCursorLock();
+            }
 
             if (InputLocked)
             {
@@ -170,13 +181,14 @@ namespace MarsSampling
             }
         }
 
-        // ----------------------------------------------------------------- editor
+        // ---------------------------------------------------------------- desktop
 
-        void ReadEditorInput(ref Vector2 moveInput, ref Vector2 lookDelta)
+        void ReadDesktopInput(ref Vector2 moveInput, ref Vector2 lookDelta)
         {
             var kb = Keyboard.current;
             var mouse = Mouse.current;
-            if (kb == null && mouse == null) return;
+            Vector2 centre = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
 
             if (kb != null)
             {
@@ -187,22 +199,51 @@ namespace MarsSampling
                 if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) wasd.x -= 1f;
                 moveInput += Vector2.ClampMagnitude(wasd, 1f);
 
-                // E = interact with whatever the crosshair (screen centre) is on.
+                // E = interact with whatever the crosshair is on.
                 if (kb.eKey.wasPressedThisFrame && interactor != null && !InputLocked)
-                    interactor.TapAt(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
+                    interactor.TapAt(centre);
+
+                // Tab = tablet. Esc = close the tablet if open, otherwise free the cursor.
+                var mission = MissionManager.Instance;
+                if (kb.tabKey.wasPressedThisFrame && mission != null)
+                    mission.tablet.Toggle();
+                if (kb.escapeKey.wasPressedThisFrame)
+                {
+                    if (mission != null && mission.tablet.IsOpen) mission.tablet.Close();
+                    else _cursorFreed = true;
+                }
             }
 
             if (mouse != null)
             {
-                if (mouse.rightButton.isPressed)
-                    lookDelta += mouse.delta.ReadValue();
+                // Mouse look whenever the cursor is captured. Holding Right Mouse also
+                // works with a free cursor (handy in the editor).
+                if (cursorLocked || mouse.rightButton.isPressed)
+                    lookDelta += mouse.delta.ReadValue() * (mouseSensitivity / lookSensitivity);
 
-                if (mouse.leftButton.wasPressedThisFrame && interactor != null)
+                if (mouse.leftButton.wasPressedThisFrame && !InputLocked)
                 {
-                    Vector2 pos = mouse.position.ReadValue();
-                    if (!UiUtil.IsPointerOverUi(pos))
-                        interactor.TapAt(pos);
+                    if (cursorLocked)
+                    {
+                        if (interactor != null) interactor.TapAt(centre);
+                    }
+                    else if (!UiUtil.IsPointerOverUi(mouse.position.ReadValue()))
+                    {
+                        _cursorFreed = false; // clicking the world re-captures the cursor
+                    }
                 }
+            }
+        }
+
+        /// <summary>Capture the cursor for mouse-look unless a panel is open or Esc freed it.</summary>
+        void UpdateCursorLock()
+        {
+            bool wantLock = !InputLocked && !_cursorFreed;
+            var mode = wantLock ? CursorLockMode.Locked : CursorLockMode.None;
+            if (Cursor.lockState != mode)
+            {
+                Cursor.lockState = mode;
+                Cursor.visible = !wantLock;
             }
         }
 

@@ -17,6 +17,7 @@ namespace MarsSampling
         public Button sendButton;
 
         bool _open;
+        public bool IsOpen => _open;
 
         public void Toggle()
         {
